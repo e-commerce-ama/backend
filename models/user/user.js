@@ -1,13 +1,7 @@
 import mongoose from "mongoose";
+
 const {Schema} = mongoose
 const userSchema = new Schema({
-    id: {
-        type: [Number, String],
-        required: true,
-        primaryKey: true,
-        unique: true,
-        index: true
-    },
     username: {
         type: String,
         required: true,

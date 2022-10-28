@@ -20,7 +20,6 @@ const connectDB = async () => {
         app.listen(process.env.PORT, () => {
             console.log(`Server Running On Port: ${process.env.PORT}`)
         }).on('error', async (e) => {
-            console.log(e.code)
             if (e.code === "EADDRINUSE") {
                 await mongoose.disconnect().then(async () => await killProcess(process.env.PORT, 'tcp'))
                 return
