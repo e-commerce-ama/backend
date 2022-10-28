@@ -1,10 +1,10 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
 import dotenv from 'dotenv'
+import routes from './routes.js'
 
 const app = express();
-app.use(cors());
+app.use('/', routes)
 dotenv.config()
 
 const connectDB = async () => {
