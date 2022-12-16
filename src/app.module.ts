@@ -5,7 +5,11 @@ import { ProductModule } from './modules/product.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/e-commerce'),
+    MongooseModule.forRoot(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+    }),
     UserModule,
     ProductModule,
   ],
