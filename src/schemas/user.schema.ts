@@ -1,9 +1,13 @@
 import { Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Product } from './product.schema';
 
 export type userDocument = User & Document;
 
 export class User {
+  @Prop({ type: Types.ObjectId })
+  _id: Types.ObjectId;
+
   @Prop({ required: true })
   first_name: string;
 
@@ -15,6 +19,9 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ type: [Types.ObjectId], ref: Product.name })
+  reviews: Product[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
