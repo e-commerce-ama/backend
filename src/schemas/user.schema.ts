@@ -21,7 +21,7 @@ export class User {
   password: string;
 
   @Prop({ type: [Types.ObjectId], ref: Product.name })
-  reviews: Product[];
+  products: Product[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
