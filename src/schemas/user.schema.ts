@@ -5,7 +5,7 @@ import { Product } from './product.schema';
 export type userDocument = User & Document;
 
 export class User {
-  @Prop({ type: Types.ObjectId, index: true })
+  @Prop({ type: Types.ObjectId })
   _id: Types.ObjectId;
 
   @Prop({ required: true })
