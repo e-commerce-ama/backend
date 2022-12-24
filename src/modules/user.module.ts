@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { UserController } from '../controllers/user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 
 @Module({
-  controllers: [UserController],
   providers: [UserService],
+  controllers: [],
+  exports: [UserService],
   imports: [
     MongooseModule.forFeatureAsync([
       {
