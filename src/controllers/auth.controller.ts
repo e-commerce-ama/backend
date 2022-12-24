@@ -12,15 +12,10 @@ export class AuthController {
     private authService: AuthService,
   ) {}
 
-  @Get('/onlyauth')
+  @Get('/profile')
   @UseGuards(AuthGuard('jwt'))
-  async hiddenInformation() {
-    return 'hidden information';
-  }
-
-  @Get('/anyone')
-  async publicInformation() {
-    return 'this can be seen by anyone';
+  async profile() {
+    return 'Profile';
   }
 
   @Post('register')
@@ -29,7 +24,6 @@ export class AuthController {
     const payload = {
       email: user.email,
     };
-
     const token = await this.authService.signPayload(payload);
     return { user, token };
   }

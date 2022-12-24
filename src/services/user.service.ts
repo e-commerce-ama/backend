@@ -13,14 +13,6 @@ export class UserService {
     @InjectModel(User.name) private readonly model: Model<userDocument>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return await this.model.find().exec();
-  }
-
-  async findOne(id: string): Promise<User> {
-    return await this.model.findById(id).exec();
-  }
-
   async register(userDto: UserDto) {
     const { email } = userDto;
     const user = await this.model.findOne({ email });
@@ -54,11 +46,15 @@ export class UserService {
     return this.model.findOne({ email });
   }
 
-  async update(id: string, userDto: UserDto): Promise<User> {
-    return await this.model.findByIdAndUpdate(id, userDto).exec();
-  }
-
-  async delete(id: string): Promise<User> {
-    return await this.model.findByIdAndDelete(id).exec();
-  }
+  //
+  // async update(id: string, userDto: UserDto): Promise<User> {
+  //   return await this.model.findByIdAndUpdate(id, userDto).exec();
+  // }
+  //
+  // async delete(id: string): Promise<User> {
+  //   return await this.model.findByIdAndDelete(id).exec();
+  // }
+  // async findOne(id: string): Promise<User> {
+  //   return await this.model.findById(id).exec();
+  // }
 }
