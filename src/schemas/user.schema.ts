@@ -1,13 +1,11 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
 import { Product } from './product.schema';
 
 export type userDocument = User & Document;
 
+@Schema()
 export class User {
-  @Prop({ type: Types.ObjectId })
-  _id: Types.ObjectId;
-
   @Prop({ required: true })
   first_name: string;
 
@@ -23,7 +21,7 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ type: [Types.ObjectId], ref: Product.name })
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] })
   products: Product[];
 }
 
