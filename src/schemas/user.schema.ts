@@ -21,6 +21,9 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ type: Date })
+  updated_at: Date;
+
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] })
   products: Product[];
 }
