@@ -4,14 +4,14 @@ import { UserDto } from '../dto/user.dto';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
-import { MailService } from '../services/mail.service';
 
-@Controller('auth')
+// import { MailService } from '../services/mail.service';
+
+@Controller()
 export class AuthController {
   constructor(
     private userService: UserService,
     private authService: AuthService,
-    private mailService: MailService,
   ) {}
 
   @Get('/profile')
@@ -28,7 +28,7 @@ export class AuthController {
     };
     const token = await this.authService.signPayload(payload);
     // send confirmation mail
-    await this.mailService.sendUserConfirmation(user, token);
+    // await this.mailService.sendUserConfirmation(user, token);
     return { user, token };
   }
 

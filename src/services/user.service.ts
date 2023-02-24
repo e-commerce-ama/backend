@@ -27,8 +27,10 @@ export class UserService {
   }
 
   async findByLogin(UserDTO: LoginDto) {
-    const { email, password } = UserDTO;
-    const user = await this.model.findOne({ email });
+    const { user_info, password } = UserDTO;
+    const user = await this.model
+      .findOne()
+      .or([{ username: user_info }, { email: user_info }]);
     if (!user) {
       throw new HttpException('user doesnt exists', HttpStatus.BAD_REQUEST);
     }
@@ -45,16 +47,4 @@ export class UserService {
     const { email } = payload;
     return this.model.findOne({ email });
   }
-
-  //
-  // async update(id: string, userDto: UserDto): Promise<User> {
-  //   return await this.model.findByIdAndUpdate(id, userDto).exec();
-  // }
-  //
-  // async delete(id: string): Promise<User> {
-  //   return await this.model.findByIdAndDelete(id).exec();
-  // }
-  // async findOne(id: string): Promise<User> {
-  //   return await this.model.findById(id).exec();
-  // }
 }

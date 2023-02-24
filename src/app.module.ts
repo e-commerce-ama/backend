@@ -5,10 +5,13 @@ import { ProductModule } from './modules/product.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth.module';
 import { CategoryModule } from './modules/category.module';
-import { MailModule } from './modules/mail.module';
+// import { MailModule } from './modules/mail.module';
+import { RouterModule } from 'nest-router';
+import { routes } from './app.routes';
 
 @Module({
   imports: [
+    RouterModule.forRoutes(routes),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -19,7 +22,7 @@ import { MailModule } from './modules/mail.module';
     ProductModule,
     AuthModule,
     CategoryModule,
-    MailModule,
+    // MailModule,
   ],
 })
 export class AppModule {}
