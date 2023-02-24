@@ -21,23 +21,31 @@ export class UserService {
     }
     const createdUser = new this.model(userDto);
     await createdUser.save();
-    const finalUser = createdUser.toObject();
-    delete finalUser['password'];
-    return finalUser;
+    const getUser = createdUser.toObject();
+    return {
+      first_name: getUser.first_name,
+      last_name: getUser.last_name,
+      email: getUser.email,
+      mobile_number: getUser.mobile_number,
+    };
   }
 
   async findByLogin(UserDTO: LoginDto) {
     const { user_info, password } = UserDTO;
     const user = await this.model
       .findOne()
-      .or([{ username: user_info }, { email: user_info }]);
+      .or([{ mobile_number: user_info }, { email: user_info }]);
     if (!user) {
       throw new HttpException('user doesnt exists', HttpStatus.BAD_REQUEST);
     }
     if (await bcrypt.compare(password, user.password)) {
-      const finalUser = user.toObject();
-      delete finalUser['password'];
-      return finalUser;
+      const getUser = user.toObject();
+      return {
+        first_name: getUser.first_name,
+        last_name: getUser.last_name,
+        email: getUser.email,
+        mobile_number: getUser.mobile_number,
+      };
     } else {
       throw new HttpException('invalid credential', HttpStatus.BAD_REQUEST);
     }
