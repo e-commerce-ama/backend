@@ -28,6 +28,8 @@ export class AuthController {
       mobile_number: user.mobile_number,
     };
     const token = await this.authService.signPayload(payload);
+    // send confirmation mail
+    // await this.mailService.sendUserConfirmation(user, token);
     return { user, token };
   }
 
