@@ -93,7 +93,9 @@ export class UserService {
   }
 
   async findByPayload(payload: Payload) {
-    const { email } = payload;
-    return this.model.findOne({ email });
+    const { email, mobile_number } = payload;
+    return this.model
+      .findOne()
+      .or([{ mobile_number: mobile_number }, { email: email }]);
   }
 }
