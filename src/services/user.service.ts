@@ -65,14 +65,20 @@ export class UserService {
     };
   }
 
-  async findByLogin(UserDTO: LoginDto) {
-    const { user_info, password } = UserDTO;
+  async findUser(user_info) {
     const user = await this.model
       .findOne()
       .or([{ mobile_number: user_info }, { email: user_info }]);
     if (!user) {
       throw new HttpException('user doesnt exists', HttpStatus.BAD_REQUEST);
+    } else {
+      return user;
     }
+  }
+
+  async login(UserDTO: LoginDto) {
+    const { user_info, password } = UserDTO;
+    const user = await this.findUser(user_info);
     if (await bcrypt.compare(password, user.password)) {
       const getUser = user.toObject();
       return {

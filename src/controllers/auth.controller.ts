@@ -25,18 +25,18 @@ export class AuthController {
     const user = await this.userService.register(registerDTO);
     const payload = {
       email: user.email,
+      mobile_number: user.mobile_number,
     };
     const token = await this.authService.signPayload(payload);
-    // send confirmation mail
-    // await this.mailService.sendUserConfirmation(user, token);
     return { user, token };
   }
 
   @Post('login')
   async login(@Body() loginDTO: LoginDto) {
-    const user = await this.userService.findByLogin(loginDTO);
+    const user = await this.userService.login(loginDTO);
     const payload = {
       email: user.email,
+      mobile_number: user.mobile_number,
     };
     const token = await this.authService.signPayload(payload);
     return { user, token };
