@@ -21,6 +21,12 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ nullable: true })
+  verification_token: number;
+
+  @Prop({ default: false })
+  is_verified: boolean;
+
   @Prop({ type: Date })
   updated_at: Date;
 

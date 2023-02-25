@@ -3,12 +3,14 @@ import { UserService } from '../services/user.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   providers: [UserService],
   controllers: [],
   exports: [UserService],
   imports: [
+    HttpModule,
     MongooseModule.forFeatureAsync([
       {
         name: User.name,

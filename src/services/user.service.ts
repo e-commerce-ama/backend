@@ -6,22 +6,57 @@ import { UserDto } from '../dto/user.dto';
 import { LoginDto } from '../dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { Payload } from 'src/types/payload';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly model: Model<userDocument>,
+    private readonly httpService: HttpService,
   ) {}
 
+  async sendSMS(user: User) {
+    const { mobile_number, verification_token } = user;
+    await firstValueFrom(
+      this.httpService.post(
+        'https://api.ghasedak.me/v2/verification/send/simple',
+        {
+          receptor: mobile_number,
+          template: 'ecommerce',
+          type: '1',
+          param1: verification_token,
+        },
+        {
+          headers: {
+            'cache-control': 'no-cache',
+            'content-type': 'application/x-www-form-urlencoded',
+            apikey:
+              '25e7cc03e2a0ccc42e6e9d41b3328a6c8cef7cf07e577ffcfed3dc030d1ff60d',
+          },
+        },
+      ),
+      // .pipe(
+      //   map((response) => {
+      //     return [response.data, response.status];
+      //   }),
+      // ),
+    );
+  }
+
   async register(userDto: UserDto) {
-    const { email } = userDto;
-    const user = await this.model.findOne({ email });
+    const { email, mobile_number } = userDto;
+    const user = await this.model
+      .findOne()
+      .or([{ mobile_number: mobile_number }, { email: email }]);
     if (user) {
       throw new HttpException('user already exists', HttpStatus.BAD_REQUEST);
     }
+    userDto.verification_token = Math.floor(100000 + Math.random() * 900000);
     const createdUser = new this.model(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();
+    await this.sendSMS(getUser);
     return {
       first_name: getUser.first_name,
       last_name: getUser.last_name,

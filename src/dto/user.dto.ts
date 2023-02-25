@@ -3,6 +3,8 @@ export class UserDto {
   last_name: string;
   mobile_number: string;
   password: string;
+  verification_token: number;
+  is_verified: boolean;
   email: string;
   updated_at: Date;
 }
