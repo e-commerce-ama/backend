@@ -1,4 +1,5 @@
 export class LoginDto {
   user_info: string;
-  password: string;
+  auth_code?: string;
+  password?: string;
 }

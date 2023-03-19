@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, userDocument } from '../schemas/user.schema';
@@ -49,9 +49,7 @@ export class UserService {
     const user = await this.model
       .findOne()
       .or([{ mobile_number: mobile_number }, { email: email }]);
-    if (user) {
-      throw new HttpException('user already exists', HttpStatus.BAD_REQUEST);
-    }
+    if (!user) return null;
     userDto.verification_token = Math.floor(100000 + Math.random() * 900000);
     const createdUser = new this.model(userDto);
     await createdUser.save();
@@ -69,11 +67,8 @@ export class UserService {
     const user = await this.model
       .findOne()
       .or([{ mobile_number: user_info }, { email: user_info }]);
-    if (!user) {
-      throw new HttpException('user doesnt exists', HttpStatus.BAD_REQUEST);
-    } else {
-      return user;
-    }
+    if (user) return user;
+    return null;
   }
 
   async login(UserDTO: LoginDto) {
@@ -88,8 +83,28 @@ export class UserService {
         mobile_number: getUser.mobile_number,
       };
     } else {
-      throw new HttpException('invalid credential', HttpStatus.BAD_REQUEST);
+      return null;
     }
+  }
+
+  async isOwnUser(user_info: string) {
+    const user = await this.findUser(user_info);
+    if (user) {
+      const getUser = user.toObject();
+      if (!this.isEmail(user_info)) await this.sendSMS(getUser);
+      return {
+        first_name: getUser.first_name,
+        last_name: getUser.last_name,
+        isEmail: this.isEmail(user_info),
+        isMobile: !this.isEmail(user_info),
+      };
+    }
+    return null;
+  }
+
+  isEmail(email) {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
   }
 
   async findByPayload(payload: Payload) {

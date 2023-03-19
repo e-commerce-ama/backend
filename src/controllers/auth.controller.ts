@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { UserDto } from '../dto/user.dto';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
+import { Response } from 'express';
 
 // import { MailService } from '../services/mail.service';
 
@@ -34,13 +43,24 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDTO: LoginDto) {
+  async login(@Body() loginDTO: LoginDto, @Res() response: Response) {
     const user = await this.userService.login(loginDTO);
+    if (!user) return response.status(HttpStatus.BAD_REQUEST).send(user);
     const payload = {
       email: user.email,
       mobile_number: user.mobile_number,
     };
     const token = await this.authService.signPayload(payload);
-    return { user, token };
+    return response.status(HttpStatus.OK).send({ user, token });
+  }
+
+  @Post('is-own-user')
+  async isOwnUser(@Body() body, @Res() response: Response) {
+    const user = await this.userService.isOwnUser(body.user_info);
+    if (user) {
+      return response.status(HttpStatus.OK).send(user);
+    } else {
+      return response.status(HttpStatus.NOT_FOUND).send(user);
+    }
   }
 }
