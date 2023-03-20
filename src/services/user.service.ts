@@ -75,7 +75,7 @@ export class UserService {
     const { user_info, password, auth_code } = UserDTO;
     const user = await this.findUser(user_info);
     if (
-      (await bcrypt.compare(password, user.password)) ||
+      (password && (await bcrypt.compare(password, user.password))) ||
       user.auth_code === Number(auth_code)
     ) {
       const getUser = user.toObject();

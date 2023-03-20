@@ -32,7 +32,6 @@ export class AuthController {
   @Post('register')
   async register(@Body() registerDTO: UserDto) {
     const user = await this.userService.register(registerDTO);
-    console.log(user);
     const payload = {
       email: user.email,
       mobile_number: user.mobile_number,
