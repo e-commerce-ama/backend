@@ -63,4 +63,14 @@ export class AuthController {
       return response.status(HttpStatus.NOT_FOUND).send(user);
     }
   }
+
+  @Post('is-own-user')
+  async resendSMS(@Body() body, @Res() response: Response) {
+    const user = await this.userService.isOwnUser(body.user_info);
+    if (user) {
+      return response.status(HttpStatus.OK).send(user);
+    } else {
+      return response.status(HttpStatus.NOT_FOUND).send(user);
+    }
+  }
 }

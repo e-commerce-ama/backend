@@ -112,6 +112,20 @@ export class UserService {
     return null;
   }
 
+  async resendSMS(user_info: string) {
+    const user = await this.findUser(user_info);
+    if (user) {
+      user.auth_code = Math.floor(100000 + Math.random() * 900000);
+      user.token_sent_at = new Date();
+      this.initVerifyCode(user);
+      await user.save();
+      const getUser = user.toObject();
+      await this.sendSMS(getUser);
+      return true;
+    }
+    return false;
+  }
+
   initVerifyCode(user: UserDto) {
     user.auth_code = Number(Math.floor(100000 + Math.random() * 900000));
     user.token_sent_at = new Date();
