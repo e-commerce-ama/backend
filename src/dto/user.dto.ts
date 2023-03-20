@@ -4,7 +4,7 @@ export class UserDto {
   mobile_number: string;
   password: string;
   verification_token: number;
-  is_verified: boolean;
   email: string;
+  token_sent_at: Date;
   updated_at: Date;
 }

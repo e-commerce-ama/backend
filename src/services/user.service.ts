@@ -49,8 +49,8 @@ export class UserService {
     const user = await this.model
       .findOne()
       .or([{ mobile_number: mobile_number }, { email: email }]);
-    if (!user) return null;
-    userDto.verification_token = Math.floor(100000 + Math.random() * 900000);
+    if (user) return null;
+    this.initVerifyCode(userDto);
     const createdUser = new this.model(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();
@@ -91,7 +91,14 @@ export class UserService {
     const user = await this.findUser(user_info);
     if (user) {
       const getUser = user.toObject();
-      if (!this.isEmail(user_info)) await this.sendSMS(getUser);
+      if (!this.isEmail(user_info)) {
+        user.verification_token = Math.floor(100000 + Math.random() * 900000);
+        user.token_sent_at = new Date();
+        this.initVerifyCode(user);
+        await user.save();
+        const getUser = user.toObject();
+        await this.sendSMS(getUser);
+      }
       return {
         first_name: getUser.first_name,
         last_name: getUser.last_name,
@@ -100,6 +107,11 @@ export class UserService {
       };
     }
     return null;
+  }
+
+  initVerifyCode(user: UserDto) {
+    user.verification_token = Math.floor(100000 + Math.random() * 900000);
+    user.token_sent_at = new Date();
   }
 
   isEmail(email) {

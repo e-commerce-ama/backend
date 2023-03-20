@@ -24,11 +24,11 @@ export class User {
   @Prop({ nullable: true })
   verification_token: number;
 
-  @Prop({ default: false })
-  is_verified: boolean;
-
   @Prop({ type: Date })
   updated_at: Date;
+
+  @Prop({ type: Date })
+  token_sent_at: Date;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] })
   products: Product[];
