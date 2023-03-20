@@ -22,7 +22,7 @@ export class User {
   password: string;
 
   @Prop({ nullable: true })
-  verification_token: number;
+  auth_code: number;
 
   @Prop({ type: Date })
   updated_at: Date;

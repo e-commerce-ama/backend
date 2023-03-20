@@ -17,7 +17,7 @@ export class UserService {
   ) {}
 
   async sendSMS(user: User) {
-    const { mobile_number, verification_token } = user;
+    const { mobile_number, auth_code } = user;
     await firstValueFrom(
       this.httpService.post(
         'https://api.ghasedak.me/v2/verification/send/simple',
@@ -25,7 +25,7 @@ export class UserService {
           receptor: mobile_number,
           template: 'ecommerce',
           type: '1',
-          param1: verification_token,
+          param1: auth_code,
         },
         {
           headers: {
@@ -72,9 +72,12 @@ export class UserService {
   }
 
   async login(UserDTO: LoginDto) {
-    const { user_info, password } = UserDTO;
+    const { user_info, password, auth_code } = UserDTO;
     const user = await this.findUser(user_info);
-    if (await bcrypt.compare(password, user.password)) {
+    if (
+      (await bcrypt.compare(password, user.password)) ||
+      user.auth_code === Number(auth_code)
+    ) {
       const getUser = user.toObject();
       return {
         first_name: getUser.first_name,
@@ -92,7 +95,7 @@ export class UserService {
     if (user) {
       const getUser = user.toObject();
       if (!this.isEmail(user_info)) {
-        user.verification_token = Math.floor(100000 + Math.random() * 900000);
+        user.auth_code = Math.floor(100000 + Math.random() * 900000);
         user.token_sent_at = new Date();
         this.initVerifyCode(user);
         await user.save();
@@ -110,7 +113,7 @@ export class UserService {
   }
 
   initVerifyCode(user: UserDto) {
-    user.verification_token = Math.floor(100000 + Math.random() * 900000);
+    user.auth_code = Number(Math.floor(100000 + Math.random() * 900000));
     user.token_sent_at = new Date();
   }
 

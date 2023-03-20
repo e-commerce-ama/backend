@@ -3,7 +3,7 @@ export class UserDto {
   last_name: string;
   mobile_number: string;
   password: string;
-  verification_token: number;
+  auth_code: number;
   email: string;
   token_sent_at: Date;
   updated_at: Date;
