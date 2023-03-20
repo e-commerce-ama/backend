@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { HttpModule } from '@nestjs/axios';
+import { Mobile, MobileSchema } from '../schemas/mobile_verification.schema';
 
 @Module({
   providers: [UserService],
@@ -31,6 +32,9 @@ import { HttpModule } from '@nestjs/axios';
           return schema;
         },
       },
+    ]),
+    MongooseModule.forFeature([
+      { name: Mobile.name, schema: MobileSchema, collection: 'mobile' },
     ]),
   ],
 })

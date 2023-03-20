@@ -21,14 +21,8 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ nullable: true })
-  auth_code: number;
-
   @Prop({ type: Date })
   updated_at: Date;
-
-  @Prop({ type: Date })
-  token_sent_at: Date;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }] })
   products: Product[];

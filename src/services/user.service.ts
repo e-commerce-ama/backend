@@ -8,16 +8,20 @@ import * as bcrypt from 'bcrypt';
 import { Payload } from 'src/types/payload';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { Mobile, mobileDocument } from '../schemas/mobile_verification.schema';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private readonly model: Model<userDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<userDocument>,
+    @InjectModel(Mobile.name)
+    private readonly mobileModel: Model<mobileDocument>,
     private readonly httpService: HttpService,
   ) {}
 
-  async sendSMS(user: User) {
-    const { mobile_number, auth_code } = user;
+  async sendSMS(mobile: Mobile) {
+    const { mobile_number, auth_code } = mobile;
     await firstValueFrom(
       this.httpService.post(
         'https://api.ghasedak.me/v2/verification/send/simple',
@@ -36,25 +40,20 @@ export class UserService {
           },
         },
       ),
-      // .pipe(
-      //   map((response) => {
-      //     return [response.data, response.status];
-      //   }),
-      // ),
     );
   }
 
   async register(userDto: UserDto) {
     const { email, mobile_number } = userDto;
-    const user = await this.model
+    const user = await this.userModel
       .findOne()
       .or([{ mobile_number: mobile_number }, { email: email }]);
     if (user) return null;
-    this.initVerifyCode(userDto);
-    const createdUser = new this.model(userDto);
+    // this.initVerifyCode(userDto);
+    const createdUser = new this.userModel(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();
-    await this.sendSMS(getUser);
+    // await this.sendSMS(getUser);
     return {
       first_name: getUser.first_name,
       last_name: getUser.last_name,
@@ -64,30 +63,41 @@ export class UserService {
   }
 
   async findUser(user_info) {
-    const user = await this.model
+    const user = await this.userModel
       .findOne()
       .or([{ mobile_number: user_info }, { email: user_info }]);
     if (user) return user;
     return null;
   }
 
+  async findMobile(mobile_number) {
+    const mobile = await this.mobileModel.findOne({
+      mobile_number: mobile_number,
+    });
+    if (mobile) return mobile;
+    return null;
+  }
+
   async login(UserDTO: LoginDto) {
     const { user_info, password, auth_code } = UserDTO;
     const user = await this.findUser(user_info);
-    if (
-      (password && (await bcrypt.compare(password, user.password))) ||
-      user.auth_code === Number(auth_code)
-    ) {
-      const getUser = user.toObject();
-      return {
-        first_name: getUser.first_name,
-        last_name: getUser.last_name,
-        email: getUser.email,
-        mobile_number: getUser.mobile_number,
-      };
-    } else {
-      return null;
-    }
+    const mobile = await this.findMobile(user_info);
+    if (!password) {
+      const expiredCode =
+        (new Date(mobile.updated_at).getTime() - new Date().getTime()) /
+          60000 <=
+        15;
+      if (mobile.auth_code !== Number(auth_code) || !expiredCode)
+        return 'auth_code_wrong';
+    } else if (password && !(await bcrypt.compare(password, user.password)))
+      return 'password_incorrect';
+    const getUser = user.toObject();
+    return {
+      first_name: getUser.first_name,
+      last_name: getUser.last_name,
+      email: getUser.email,
+      mobile_number: getUser.mobile_number,
+    };
   }
 
   async isOwnUser(user_info: string) {
@@ -95,12 +105,18 @@ export class UserService {
     if (user) {
       const getUser = user.toObject();
       if (!this.isEmail(user_info)) {
-        user.auth_code = Math.floor(100000 + Math.random() * 900000);
-        user.token_sent_at = new Date();
-        this.initVerifyCode(user);
-        await user.save();
-        const getUser = user.toObject();
-        await this.sendSMS(getUser);
+        const mobile = await this.findMobile(user_info);
+        if (mobile) {
+          mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
+          mobile.save();
+        } else {
+          await new this.mobileModel({
+            mobile_number: user_info,
+            auth_code: Math.floor(100000 + Math.random() * 900000),
+            updated_at: new Date(),
+          }).save();
+        }
+        await this.sendSMS(mobile);
       }
       return {
         first_name: getUser.first_name,
@@ -112,24 +128,22 @@ export class UserService {
     return null;
   }
 
-  async resendSMS(user_info: string) {
-    const user = await this.findUser(user_info);
-    if (user) {
-      user.auth_code = Math.floor(100000 + Math.random() * 900000);
-      user.token_sent_at = new Date();
-      this.initVerifyCode(user);
-      await user.save();
-      const getUser = user.toObject();
-      await this.sendSMS(getUser);
-      return true;
-    }
-    return false;
-  }
-
-  initVerifyCode(user: UserDto) {
-    user.auth_code = Number(Math.floor(100000 + Math.random() * 900000));
-    user.token_sent_at = new Date();
-  }
+  // async resendSMS(user_info: string) {
+  //   const user = await this.findUser(user_info);
+  //   if (user) {
+  //     user.auth_code = Math.floor(100000 + Math.random() * 900000);
+  //     this.initVerifyCode(user);
+  //     await user.save();
+  //     const getUser = user.toObject();
+  //     await this.sendSMS(getUser);
+  //     return true;
+  //   }
+  //   return false;
+  // }
+  //
+  // initVerifyCode(user: UserDto) {
+  //   user.auth_code = Number(Math.floor(100000 + Math.random() * 900000));
+  // }
 
   isEmail(email) {
     const re = /\S+@\S+\.\S+/;
@@ -138,6 +152,9 @@ export class UserService {
 
   async findByPayload(payload: Payload) {
     const { email, mobile_number } = payload;
-    return this.model.findOne({ mobile_number: mobile_number, email: email });
+    return this.userModel.findOne({
+      mobile_number: mobile_number,
+      email: email,
+    });
   }
 }

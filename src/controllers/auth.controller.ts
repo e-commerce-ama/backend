@@ -45,7 +45,8 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDTO: LoginDto, @Res() response: Response) {
     const user = await this.userService.login(loginDTO);
-    if (!user) return response.status(HttpStatus.BAD_REQUEST).send(user);
+    if (typeof user === 'string')
+      return response.status(HttpStatus.OK).send({ error: user });
     const payload = {
       email: user.email,
       mobile_number: user.mobile_number,
@@ -64,13 +65,13 @@ export class AuthController {
     }
   }
 
-  @Post('is-own-user')
-  async resendSMS(@Body() body, @Res() response: Response) {
-    const user = await this.userService.isOwnUser(body.user_info);
-    if (user) {
-      return response.status(HttpStatus.OK).send(user);
-    } else {
-      return response.status(HttpStatus.NOT_FOUND).send(user);
-    }
-  }
+  // @Post('is-own-user')
+  // async resendSMS(@Body() body, @Res() response: Response) {
+  //   const user = await this.userService.isOwnUser(body.user_info);
+  //   if (user) {
+  //     return response.status(HttpStatus.OK).send(user);
+  //   } else {
+  //     return response.status(HttpStatus.NOT_FOUND).send(user);
+  //   }
+  // }
 }
