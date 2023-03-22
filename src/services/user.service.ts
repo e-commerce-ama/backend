@@ -16,7 +16,7 @@ export class UserService {
     @InjectModel(User.name)
     private readonly userModel: Model<userDocument>,
     @InjectModel(Mobile.name)
-    private readonly mobileModel: Model<mobileDocument>,
+    readonly mobileModel: Model<mobileDocument>,
     private readonly httpService: HttpService,
   ) {}
 

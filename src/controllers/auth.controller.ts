@@ -39,9 +39,44 @@ export class AuthController {
       mobile_number: user.mobile_number,
     };
     const token = await this.authService.signPayload(payload);
-    // send confirmation mail
-    await this.mailService.sendUserConfirmation(user, token);
     return { user, token };
+  }
+
+  @Post('forget-password')
+  async forgetPassword(@Body() body, @Res() response: Response) {
+    const user = await this.userService.findUser(body.user_info);
+    if (user) {
+      const getUser = user.toObject();
+      if (this.userService.isEmail(body.user_info)) {
+        const payload = {
+          email: user.email,
+          mobile_number: user.mobile_number,
+        };
+        const token = await this.authService.signPayload(payload);
+        await this.mailService.resetPasswordConfirmation(user, token);
+      } else {
+        const mobile = await this.userService.findMobile(body.user_info);
+        if (mobile) {
+          mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
+          mobile.save();
+        } else {
+          await new this.userService.mobileModel({
+            mobile_number: body.user_info,
+            auth_code: Math.floor(100000 + Math.random() * 900000),
+            updated_at: new Date(),
+          }).save();
+        }
+        await this.userService.sendSMS(mobile);
+      }
+      return response.status(HttpStatus.OK).send({
+        first_name: getUser.first_name,
+        last_name: getUser.last_name,
+        isEmail: this.userService.isEmail(body.user_info),
+        isMobile: !this.userService.isEmail(body.user_info),
+      });
+    } else {
+      return response.status(HttpStatus.OK).send({ error: true });
+    }
   }
 
   @Post('login')
