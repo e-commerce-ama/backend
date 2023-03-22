@@ -49,11 +49,13 @@ export class UserService {
       .findOne()
       .or([{ mobile_number: mobile_number }, { email: email }]);
     if (user) return null;
-    // this.initVerifyCode(userDto);
     const createdUser = new this.userModel(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();
-    // await this.sendSMS(getUser);
+    const mobile = await this.findMobile(getUser.mobile_number);
+    mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
+    mobile.save();
+    await this.sendSMS(mobile);
     return {
       first_name: getUser.first_name,
       last_name: getUser.last_name,
@@ -128,22 +130,22 @@ export class UserService {
     return null;
   }
 
-  // async resendSMS(user_info: string) {
-  //   const user = await this.findUser(user_info);
-  //   if (user) {
-  //     user.auth_code = Math.floor(100000 + Math.random() * 900000);
-  //     this.initVerifyCode(user);
-  //     await user.save();
-  //     const getUser = user.toObject();
-  //     await this.sendSMS(getUser);
-  //     return true;
-  //   }
-  //   return false;
-  // }
-  //
-  // initVerifyCode(user: UserDto) {
-  //   user.auth_code = Number(Math.floor(100000 + Math.random() * 900000));
-  // }
+  async resendSMS(user_info: string) {
+    const user = await this.findUser(user_info);
+    const getUser = user.toObject();
+    const mobile = await this.findMobile(user_info);
+    if (mobile) {
+      mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
+      mobile.save();
+    } else {
+      await new this.mobileModel({
+        mobile_number: user_info,
+        auth_code: Math.floor(100000 + Math.random() * 900000),
+        updated_at: new Date(),
+      }).save();
+    }
+    return true;
+  }
 
   isEmail(email) {
     const re = /\S+@\S+\.\S+/;

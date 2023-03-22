@@ -65,13 +65,13 @@ export class AuthController {
     }
   }
 
-  // @Post('is-own-user')
-  // async resendSMS(@Body() body, @Res() response: Response) {
-  //   const user = await this.userService.isOwnUser(body.user_info);
-  //   if (user) {
-  //     return response.status(HttpStatus.OK).send(user);
-  //   } else {
-  //     return response.status(HttpStatus.NOT_FOUND).send(user);
-  //   }
-  // }
+  @Post('resend-code')
+  async resendSMS(@Body() body, @Res() response: Response) {
+    const sentSMS = await this.userService.resendSMS(body.user_info);
+    if (sentSMS) {
+      return response.status(HttpStatus.OK).send({ success: true });
+    } else {
+      return response.status(HttpStatus.OK).send({ error: true });
+    }
+  }
 }
