@@ -22,7 +22,7 @@ export class UserService {
 
   async sendSMS(mobile: Mobile) {
     const { mobile_number, auth_code } = mobile;
-    await firstValueFrom(
+    return await firstValueFrom(
       this.httpService.post(
         'https://api.ghasedak.me/v2/verification/send/simple',
         {
@@ -131,12 +131,18 @@ export class UserService {
   }
 
   async resendSMS(user_info: string) {
-    const user = await this.findUser(user_info);
-    const getUser = user.toObject();
     const mobile = await this.findMobile(user_info);
     if (mobile) {
-      mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
-      mobile.save();
+      const expiredCode =
+        (new Date(mobile.updated_at).getTime() - new Date().getTime()) /
+          60000 <=
+        3;
+      if (!expiredCode) {
+        mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
+        mobile.save();
+      } else {
+        return false;
+      }
     } else {
       await new this.mobileModel({
         mobile_number: user_info,
@@ -144,7 +150,7 @@ export class UserService {
         updated_at: new Date(),
       }).save();
     }
-    return true;
+    return !!(await this.sendSMS(mobile));
   }
 
   isEmail(email) {
