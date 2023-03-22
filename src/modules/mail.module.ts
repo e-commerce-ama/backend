@@ -10,8 +10,6 @@ import { ConfigService } from '@nestjs/config';
     MailerModule.forRootAsync({
       // imports: [ConfigModule], // import module if not enabled globally
       useFactory: async (config: ConfigService) => ({
-        // transport: config.get("MAIL_TRANSPORT"),
-        // or
         transport: {
           host: config.get('MAIL_HOST'),
           secure: false,
@@ -24,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
           from: `"No Reply" <${config.get('MAIL_FROM')}>`,
         },
         template: {
-          dir: join(__dirname, 'templates'),
+          dir: join(__dirname, '..', 'public/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,

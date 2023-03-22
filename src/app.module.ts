@@ -5,7 +5,7 @@ import { ProductModule } from './modules/product.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth.module';
 import { CategoryModule } from './modules/category.module';
-// import { MailModule } from './modules/mail.module';
+import { MailModule } from './modules/mail.module';
 import { RouterModule } from 'nest-router';
 import { routes } from './app.routes';
 
@@ -22,7 +22,7 @@ import { routes } from './app.routes';
     ProductModule,
     AuthModule,
     CategoryModule,
-    // MailModule,
+    MailModule,
   ],
 })
 export class AppModule {}
