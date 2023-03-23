@@ -49,13 +49,16 @@ export class UserService {
       .findOne()
       .or([{ mobile_number: mobile_number }, { email: email }]);
     if (user) return null;
+    const mobile = await new this.mobileModel({
+      mobile_number,
+      auth_code: Math.floor(100000 + Math.random() * 900000),
+      updated_at: new Date(),
+    }).save();
+    await this.sendSMS(mobile);
+
     const createdUser = new this.userModel(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();
-    const mobile = await this.findMobile(getUser.mobile_number);
-    mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
-    mobile.save();
-    await this.sendSMS(mobile);
     return {
       first_name: getUser.first_name,
       last_name: getUser.last_name,
@@ -73,9 +76,11 @@ export class UserService {
   }
 
   async findMobile(mobile_number) {
-    const mobile = await this.mobileModel.findOne({
-      mobile_number: mobile_number,
-    });
+    const mobile = await this.mobileModel
+      .findOne({
+        mobile_number: mobile_number,
+      })
+      .sort('-updated_at');
     if (mobile) return mobile;
     return null;
   }
@@ -107,12 +112,12 @@ export class UserService {
     if (user) {
       const getUser = user.toObject();
       if (!this.isEmail(user_info)) {
-        const mobile = await this.findMobile(user_info);
+        let mobile = await this.findMobile(user_info);
         if (mobile) {
           mobile.auth_code = Math.floor(100000 + Math.random() * 900000);
           mobile.save();
         } else {
-          await new this.mobileModel({
+          mobile = await new this.mobileModel({
             mobile_number: user_info,
             auth_code: Math.floor(100000 + Math.random() * 900000),
             updated_at: new Date(),
