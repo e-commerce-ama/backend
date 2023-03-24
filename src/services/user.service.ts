@@ -55,7 +55,6 @@ export class UserService {
       updated_at: new Date(),
     }).save();
     await this.sendSMS(mobile);
-
     const createdUser = new this.userModel(userDto);
     await createdUser.save();
     const getUser = createdUser.toObject();

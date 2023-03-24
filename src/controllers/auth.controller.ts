@@ -45,17 +45,32 @@ export class AuthController {
   async forgetPassword(@Body() body, @Res() response: Response) {
     const user = await this.userService.findUser(body.email);
     if (user) {
-      const getUser = user.toObject();
       const payload = {
         email: user.email,
         mobile_number: user.mobile_number,
       };
       const token = await this.authService.signPayload(payload);
       await this.mailService.resetPasswordConfirmation(user, token);
-      return response.status(HttpStatus.OK).send({
-        first_name: getUser.first_name,
-        last_name: getUser.last_name,
-      });
+      return response.status(HttpStatus.OK).send({ success: true });
+    } else {
+      return response.status(HttpStatus.OK).send({ error: true });
+    }
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body, @Res() response: Response) {
+    const user = await this.userService.findUser(body.email);
+    if (user) {
+      const payload = {
+        email: user.email,
+        mobile_number: user.mobile_number,
+      };
+      const token = await this.authService.signPayload(payload);
+      if (body.token !== token)
+        return response.status(HttpStatus.OK).send({ error: 'expired_token' });
+      user.password = body.password;
+      user.save();
+      return response.status(HttpStatus.OK).send({ success: true });
     } else {
       return response.status(HttpStatus.OK).send({ error: true });
     }

@@ -7,7 +7,7 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
   async resetPasswordConfirmation(user: UserDto, token: string) {
-    const url = `${process.env.APP_URL}/forget-password?token=${token}`;
+    const url = `${process.env.APP_URL}/reset-password?token=${token}`;
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
