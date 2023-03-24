@@ -14,6 +14,7 @@ import { AuthService } from '../services/auth.service';
 import { MailService } from '../services/mail.service';
 import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
+import { verify } from 'jsonwebtoken';
 
 // import { MailService } from '../services/mail.service';
 
@@ -59,15 +60,10 @@ export class AuthController {
 
   @Post('reset-password')
   async resetPassword(@Body() body, @Res() response: Response) {
-    const user = await this.userService.findUser(body.email);
-    if (user) {
-      const payload = {
-        email: user.email,
-        mobile_number: user.mobile_number,
-      };
-      const token = await this.authService.signPayload(payload);
-      if (body.token !== token)
-        return response.status(HttpStatus.OK).send({ error: 'expired_token' });
+    let getUserEmail = verify(body.token, process.env.SECRET_KEY);
+    if (typeof getUserEmail === 'object') getUserEmail = getUserEmail.email;
+    if (getUserEmail) {
+      const user = await this.userService.findUser(getUserEmail);
       user.password = body.password;
       user.save();
       return response.status(HttpStatus.OK).send({ success: true });
