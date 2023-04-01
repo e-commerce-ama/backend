@@ -7,8 +7,8 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { CategoryService } from '../services/category.service';
-import { CategoryDto } from '../dto/category.dto';
+import { CategoryService } from './category.service';
+import { CategoryDto } from './category.dto';
 
 @Controller('product')
 export class CategoryController {
